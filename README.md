@@ -1,3 +1,8 @@
+![image](http://paxdlrdk7.bkt.clouddn.com/name3.png)
+
+
+![](https://img.shields.io/badge/platform-iOS-red.svg) ![](https://img.shields.io/badge/language-Objective--C-orange.svg) ![](https://img.shields.io/cocoapods/v/YNPageViewController.svg?style=flat)
+![](https://img.shields.io/badge/license-MIT%20License-brightgreen.svg)
 # TapScrollerView
 scrollerView 嵌套联合滑动 -swift版本
 
