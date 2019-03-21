@@ -111,8 +111,6 @@
 			isa = PBXGroup;
 			children = (
 				4027944F22408907002B9C98 /* TapPageView */,
-				402794522240A12C002B9C98 /* TapSegmentView */,
-				402794572240CDB4002B9C98 /* TapNestTableView */,
 				402794212240822B002B9C98 /* AppDelegate.swift */,
 				402794232240822B002B9C98 /* ViewController.swift */,
 				402794252240822B002B9C98 /* Main.storyboard */,
@@ -145,6 +143,8 @@
 			isa = PBXGroup;
 			children = (
 				402794502240892F002B9C98 /* TapPageView.swift */,
+				402794572240CDB4002B9C98 /* TapNestTableView */,
+				402794522240A12C002B9C98 /* TapSegmentView */,
 			);
 			path = TapPageView;
 			sourceTree = "<group>";

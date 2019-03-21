@@ -15,8 +15,12 @@ protocol TapNestTableViewDelegate: class {
     func nestTableViewContainerCanScroll(nestTableView: TapNestTableView)
     // 当容器正在滚动时调用，参数scrollView就是充当容器的tableView
     func nestTableViewDidScroll(scrollView: UIScrollView)
+    
     //获取headView
     func nestTableViewHeaderView() -> UIView
+    
+    //获取segmentView
+    func nestTableViewSegmentView() -> TapSegmentView
 }
 
 protocol TapNestTableViewDataSource: class {
@@ -32,7 +36,8 @@ protocol TapNestTableViewDataSource: class {
     // 普通机型 InsetBottom = 0， iPhoneX InsetBottom = 34 （默认情况）
     func nestTableViewContentInsetBottom(nestTableView: TapNestTableView) ->CGFloat
     
-   
+    // 获取viewList
+    func nestTableViewViewList() -> [UIView]
 }
 
 class TapNestTableView: UIView {
@@ -40,16 +45,15 @@ class TapNestTableView: UIView {
     // 头部
     open var headerView: UIView?
     // 分类导航
-    open var segmentView: UIView?
+    open var segmentView: TapSegmentView?
+
     // 内容
-    open var contentView: UIView?{
+    open var contentView: TapPageView?{
         didSet{
             resizeContentHeight()
         }
     }
-    // 底部
-    open var footerView: UIView?
-    
+   
     // 设置容器是否可以滚动
     open var canScroll: Bool?{
         didSet{
@@ -70,10 +74,14 @@ class TapNestTableView: UIView {
     weak var delegate: TapNestTableViewDelegate?{
         didSet{
             tableView.tableHeaderView = delegate?.nestTableViewHeaderView()
+            segmentView = delegate?.nestTableViewSegmentView()
+            segmentView?.delegate = self
+            self.addSubview(segmentView!)
         }
     }
     weak var dataSource: TapNestTableViewDataSource?{
         didSet{
+            self.allowGestureEventPassViews = dataSource?.nestTableViewViewList()
             resizeContentHeight()
             tableView.reloadData()
         }
@@ -92,8 +100,11 @@ class TapNestTableView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+        contentView = TapPageView.init(frame: self.bounds)
+        contentView!.delegate = self
+        contentView!.dataSource = self
         self.addSubview(tableView)
+      
         
         canScroll = true
     }
@@ -111,9 +122,10 @@ class TapNestTableView: UIView {
     }
     
     func resizeContentHeight() {
-        let contentHeight = self.bounds.height - (segmentView?.bounds.height ?? 0) - self.contentInsetTop() - self.contentInsetBottom() - (footerView?.bounds.height ?? 0)
+        let contentHeight = self.bounds.height - (segmentView?.bounds.height ?? 0) - self.contentInsetTop() - self.contentInsetBottom()
         contentView?.frame = CGRect(x: 0, y: 0, width: self.bounds.width, height: contentHeight)
         tableView.reloadData()
+
     }
 
     func contentInsetTop() -> CGFloat {
@@ -123,6 +135,7 @@ class TapNestTableView: UIView {
     
     func contentInsetBottom() -> CGFloat {
         return dataSource?.nestTableViewContentInsetBottom(nestTableView: self) ?? 0
+        
     }
     
     open func heightForContainerCanScroll() -> CGFloat{
@@ -144,7 +157,7 @@ extension TapNestTableView: UITableViewDelegate{
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return segmentView ?? UIView()
+        return segmentView
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -171,19 +184,42 @@ extension TapNestTableView{
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
         let contentOffset = heightForContainerCanScroll()
-        
+
         if !(canScroll ?? true) {
             // 这里通过固定contentOffset的值，来实现不滚动
             scrollView.contentOffset = CGPoint(x: 0, y: contentOffset)
         } else if scrollView.contentOffset.y >= contentOffset {
             scrollView.contentOffset = CGPoint(x: 0, y: contentOffset)
             canScroll = false
-            
+
             // 通知delegate内容开始可以滚动
            delegate?.nestTableViewContentCanScroll(nestTableView: self)
         }
         scrollView.showsVerticalScrollIndicator = canScroll ?? false
         
         delegate?.nestTableViewDidScroll(scrollView: tableView)
+    }
+}
+
+extension TapNestTableView: TapSegmentViewDelegate{
+    func segmentView(segmentView: TapSegmentView, didScrollToIndex index: Int) {
+        contentView?.scrollToIndex(index: index)
+    }
+}
+
+extension TapNestTableView: TapPageViewDelegate{
+    func pageView(pageView: TapPageView, didScrollToIndex index: Int) {
+        segmentView?.scrollToIndex(index: index)
+        
+    }
+}
+
+extension TapNestTableView: TapPageViewDataSource{
+    func numberOfPagesInPageView(pageView: TapPageView) -> Int {
+        return dataSource?.nestTableViewViewList().count ?? 0
+    }
+    
+    func pageView(pageView: TapPageView, pageAtIndex index: Int) -> UIView {
+        return dataSource?.nestTableViewViewList()[index] ?? UIView()
     }
 }

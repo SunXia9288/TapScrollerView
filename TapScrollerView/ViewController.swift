@@ -12,9 +12,9 @@ class ViewController: UIViewController {
     private lazy var nestTableView: TapNestTableView = {
         let nestTableView = TapNestTableView.init(frame: CGRect(x: 0, y: 88, width:view.bounds.width, height: view.bounds.height - 64 - 88))
         nestTableView.headerView = headerView
-        nestTableView.segmentView = segmentView
-        nestTableView.contentView = contentView
-        nestTableView.allowGestureEventPassViews = viewList
+//        nestTableView.segmentView = segmentView
+//        nestTableView.contentView = contentView
+        
         nestTableView.delegate = self
         nestTableView.dataSource = self
         return nestTableView
@@ -28,7 +28,6 @@ class ViewController: UIViewController {
     
     private lazy var segmentView: TapSegmentView = {
         let segmentView = TapSegmentView.init(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 40))
-        segmentView.delegate = self
         segmentView.itemWidth = 80
         segmentView.itemFont = UIFont.systemFont(ofSize: 15)
         segmentView.itemNormalColor = UIColor(red: 155.0 / 255, green: 155.0 / 255, blue: 155.0 / 255, alpha: 1)
@@ -41,13 +40,8 @@ class ViewController: UIViewController {
         return segmentView
     }()
     
-    private lazy var contentView: TapPageView = {
-        let contentView = TapPageView.init(frame: view.bounds)
-        contentView.delegate = self
-        contentView.dataSource = self
-        return contentView
-    }()
     
+   
     
     private lazy var viewList: [UIView] = {
         var viewList = [UIView]()
@@ -92,27 +86,7 @@ class ViewController: UIViewController {
 
 }
 
-extension ViewController: TapSegmentViewDelegate{
-    func segmentView(segmentView: TapSegmentView, didScrollToIndex index: Int) {
-        contentView.scrollToIndex(index: index)
-    }
-}
 
-extension ViewController: TapPageViewDelegate{
-    func pageView(pageView: TapPageView, didScrollToIndex index: Int) {
-        segmentView .scrollToIndex(index: index)
-    }
-}
-
-extension ViewController: TapPageViewDataSource{
-    func numberOfPagesInPageView(pageView: TapPageView) -> Int {
-        return viewList.count
-    }
-    
-    func pageView(pageView: TapPageView, pageAtIndex index: Int) -> UIView {
-        return viewList[index]
-    }
-}
 
 extension ViewController: UITableViewDelegate{
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -123,6 +97,7 @@ extension ViewController: UITableViewDelegate{
 
 extension ViewController: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
         if tableView.tag == 200 {
             return 3
         }else{
@@ -136,10 +111,17 @@ extension ViewController: UITableViewDataSource{
         return cell
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("hahahahahhah")
+    }
     
 }
 
 extension ViewController: TapNestTableViewDelegate{
+    func nestTableViewSegmentView() -> TapSegmentView {
+        return segmentView
+    }
+    
     func nestTableViewHeaderView() -> UIView {
          return headerView
     }
@@ -157,12 +139,12 @@ extension ViewController: TapNestTableViewDelegate{
             if scrollerView != nil{
                 scrollerView?.contentOffset = CGPoint.zero
             }
-            
         }
     }
     
     func nestTableViewDidScroll(scrollView: UIScrollView) {
         // 监听容器的滚动，来设置NavigationBar的透明度
+        
 //        let offset = scrollView.contentOffset.y
 //        let canScrollHeight = nestTableView.heightForContainerCanScroll()
         
@@ -171,6 +153,10 @@ extension ViewController: TapNestTableViewDelegate{
 }
 
 extension ViewController: TapNestTableViewDataSource{
+    func nestTableViewViewList() -> [UIView] {
+        return viewList
+    }
+    
   
     
     func nestTableViewContentInsetTop(nestTableView: TapNestTableView) -> CGFloat {
